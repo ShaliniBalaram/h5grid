@@ -7,7 +7,9 @@ name = "h5grid"
 version = "0.1.0"
 description = "A lightweight HDF5 viewer for water resource model files"
 readme = "README.md"
-requires-python = ">=3.11"
+# Tested and supported on 3.11–3.13 (see the CI matrix). The dependency stack
+# ships wheels beyond this, but those versions are not verified here.
+requires-python = ">=3.11,<3.14"
 authors = [{ name = "Shalini Balaram" }]
 license = { text = "MIT" }
 keywords = ["hdf5", "h5", "viewer", "pandas", "pytables", "pywr", "water-resources"]
@@ -16,7 +18,9 @@ classifiers = [
     "Environment :: Web Environment",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Hydrology",
     "Topic :: Scientific/Engineering :: Visualization",
 ]
