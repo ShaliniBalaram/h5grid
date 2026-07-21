@@ -26,19 +26,21 @@ The full design document is [h5-viewer-spec.md](h5-viewer-spec.md).
 
 ## Install and run
 
+Requires **Python 3.11–3.13**. The published package bundles the web frontend,
+so no Node is needed:
+
 ```bash
-python -m venv .venv
-.venv/bin/pip install -e .
-
-cd frontend && npm install && npm run build && cd ..
-
-.venv/bin/h5grid path/to/model_outputs.h5
+pip install h5grid
+h5grid path/to/model_outputs.h5
 ```
 
 That starts a server on localhost, prints a URL carrying a one-off session
 token, and opens your browser. `h5grid serve` starts it with no file loaded.
 
 Flags: `--port`, `--host`, `--no-browser`, `--no-token`.
+
+To install from source instead (needs Node to build the frontend), see
+[Development](#development) below.
 
 ## Example files
 
@@ -59,8 +61,18 @@ columns; the rest are pinned to a single index you choose.
 
 ## Development
 
+From a clone (needs Node, since the frontend must be built):
+
 ```bash
+python -m venv .venv
 .venv/bin/pip install -e ".[dev]"
+cd frontend && npm install && npm run build && cd ..   # builds into backend/h5grid/static/
+.venv/bin/h5grid path/to/model_outputs.h5
+```
+
+Working on it:
+
+```bash
 .venv/bin/python backend/tests/make_fixtures.py   # writes backend/tests/fixtures/
 .venv/bin/python -m pytest backend/tests -q
 
