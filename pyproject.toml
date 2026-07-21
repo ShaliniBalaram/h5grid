@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "h5grid"
+version = "0.1.0"
+description = "A lightweight HDF5 viewer for water resource model files"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Shalini Balaram" }]
+license = { text = "MIT" }
+keywords = ["hdf5", "h5", "viewer", "pandas", "pytables", "pywr", "water-resources"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Hydrology",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dependencies = [
+    "h5py>=3.11",
+    "hdf5plugin>=4.1",
+    "tables>=3.9",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "openpyxl>=3.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/ShaliniBalaram/h5grid"
+Repository = "https://github.com/ShaliniBalaram/h5grid"
+Issues = "https://github.com/ShaliniBalaram/h5grid/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[project.scripts]
+h5grid = "h5grid.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "backend" }
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["h5grid*"]
+
+[tool.setuptools.package-data]
+h5grid = ["static/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+filterwarnings = ["ignore::DeprecationWarning"]

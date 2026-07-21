@@ -1,0 +1,25 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Generated fixture files
+backend/tests/fixtures/*.h5
+# Example files: regenerate with `python examples/make_examples.py`
+examples/*.h5
+# big.h5 especially: generated on demand, never committed
+backend/tests/fixtures/big.h5
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+backend/h5grid/static/*
+!backend/h5grid/static/.gitkeep
+
+# macOS metadata
+.DS_Store
+._*

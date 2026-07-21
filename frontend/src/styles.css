@@ -1,0 +1,908 @@
+:root {
+  --bg: #ffffff;
+  --bg-panel: #f7f8fa;
+  --bg-raised: #ffffff;
+  --bg-hover: #eef1f5;
+  --bg-active: #e2e8f2;
+  --border: #d9dee6;
+  --border-strong: #c2cad6;
+  --text: #1b2230;
+  --text-dim: #5c6779;
+  --text-faint: #8a93a3;
+  --accent: #2563cf;
+  --accent-soft: #dbe6fa;
+  --danger: #c0392b;
+  --danger-soft: #fdeceb;
+  --warn: #9a6209;
+  --warn-soft: #fdf3e0;
+  --ok: #17784a;
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  --toolbar-h: 44px;
+  --status-h: 26px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171a1f;
+    --bg-panel: #1d2126;
+    --bg-raised: #22262d;
+    --bg-hover: #2a2f37;
+    --bg-active: #333a45;
+    --border: #333941;
+    --border-strong: #454d58;
+    --text: #e6e9ee;
+    --text-dim: #a3acba;
+    --text-faint: #737d8c;
+    --accent: #5b9bf5;
+    --accent-soft: #1e3355;
+    --danger: #f0776a;
+    --danger-soft: #3a1f1c;
+    --warn: #e0a94a;
+    --warn-soft: #382c15;
+    --ok: #4fbf85;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+button.primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  background: var(--accent);
+}
+button.ghost {
+  background: transparent;
+  border-color: transparent;
+}
+button.ghost:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+button.toggled {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 7px;
+}
+input:focus,
+select:focus {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.toolbar {
+  height: var(--toolbar-h);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar .brand {
+  font-weight: 650;
+  letter-spacing: 0.2px;
+  margin-right: 4px;
+}
+
+.toolbar .spacer {
+  flex: 1;
+}
+
+.file-tabs {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  overflow-x: auto;
+  max-width: 45vw;
+}
+
+.file-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px 3px 10px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  max-width: 220px;
+}
+.file-tab:hover {
+  background: var(--bg-hover);
+}
+.file-tab.active {
+  background: var(--bg-raised);
+  border-color: var(--border);
+  color: var(--text);
+}
+.file-tab .label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-tab .close {
+  border: none;
+  background: transparent;
+  padding: 0 3px;
+  color: var(--text-faint);
+  border-radius: 3px;
+  line-height: 1;
+}
+.file-tab .close:hover {
+  background: var(--bg-active);
+  color: var(--text);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-panel);
+}
+
+.panel-header {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-body {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.resizer {
+  flex: 0 0 5px;
+  cursor: col-resize;
+  background: var(--border);
+  opacity: 0.45;
+}
+.resizer:hover,
+.resizer.dragging {
+  background: var(--accent);
+  opacity: 1;
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg);
+}
+
+/* ------------------------------------------------------------------ tree */
+
+.tree {
+  padding: 4px 0 12px;
+  user-select: none;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 0;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 4px;
+  margin: 0 4px;
+}
+.tree-row:hover {
+  background: var(--bg-hover);
+}
+.tree-row.selected {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tree-twisty {
+  width: 14px;
+  flex: 0 0 14px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 9px;
+}
+
+.tree-icon {
+  flex: 0 0 auto;
+  font-size: 11px;
+  width: 15px;
+  text-align: center;
+}
+.tree-icon.group {
+  color: var(--text-faint);
+}
+.tree-icon.dataset {
+  color: var(--accent);
+}
+.tree-icon.table {
+  color: var(--ok);
+}
+.tree-icon.broken {
+  color: var(--warn);
+}
+.tree-row:has(.tree-icon.broken) {
+  color: var(--text-faint);
+  cursor: default;
+}
+
+/* The name matters most, so it takes the free space and everything to its
+   right is sized to its content. */
+.tree-name {
+  flex: 1 1 auto;
+  min-width: 5.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* What pywr recorded at this node. Colour-coded because a modeller scanning a
+   200-node tree is usually looking for one kind of thing. */
+.pywr-tag {
+  flex: 0 0 auto;
+  font-size: 9.5px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--bg-active);
+  color: var(--text-dim);
+}
+.pywr-tag.flow {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.pywr-tag.volume {
+  background: color-mix(in srgb, var(--ok) 16%, transparent);
+  color: var(--ok);
+}
+.pywr-tag.parameter {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+/* Shape and dtype are useful but the least important thing on the row, so this
+   is what gives way when the panel is narrow — a truncated node name is much
+   worse than a truncated "1096 x 3 x 4 f64". */
+.tree-badge {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding-left: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+.tree-row.selected .tree-badge {
+  color: var(--accent);
+}
+
+/* ------------------------------------------------------------------ grid */
+
+.grid-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+  flex-wrap: wrap;
+}
+
+.grid-bar .path {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 40%;
+}
+
+.dim-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Groups a label with its inputs so related controls read as one unit and do
+   not look like they belong to the neighbouring control. */
+.control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.control-group input,
+.control-group select {
+  padding: 2px 6px;
+}
+
+.grid-host {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.status-bar {
+  flex: 0 0 auto;
+  height: var(--status-h);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 10px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.status-bar .sep {
+  margin-left: auto;
+}
+.status-bar b {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ------------------------------------------------------------- inspector */
+
+.inspector-section {
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--border);
+}
+.inspector-section h4 {
+  margin: 0 0 7px;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.55px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: minmax(60px, auto) 1fr;
+  gap: 3px 10px;
+  font-size: 12px;
+}
+.kv dt {
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.kv dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  word-break: break-word;
+}
+
+/* Model column names get long ("RV20.Custom.High Flow control curve (VBA)").
+   Give the name the flexible track and the dtype only what it needs, or the
+   dtype gets squeezed until it wraps one character per line. */
+.col-list {
+  grid-template-columns: 1fr auto;
+}
+.col-list dt {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.col-list dd {
+  white-space: nowrap;
+  color: var(--text-dim);
+  align-self: start;
+}
+
+.attr-value {
+  cursor: pointer;
+  display: block;
+  max-height: 2.6em;
+  overflow: hidden;
+}
+.attr-value.expanded {
+  max-height: none;
+  white-space: pre-wrap;
+}
+.attr-value.truncated::after {
+  content: " …";
+  color: var(--accent);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 10px;
+  font-size: 12px;
+}
+.stat-grid .label {
+  color: var(--text-dim);
+}
+.stat-grid .value {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  text-align: right;
+}
+
+/* ----------------------------------------------------------------- plot */
+
+.plot-drawer {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+}
+.plot-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.plot-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px 10px;
+  overflow: hidden;
+}
+
+/* Takes whatever the drawer has left; the plot is sized from this box rather
+   than from a fixed number, so the axes always have room. */
+.plot-host {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+.series-picker {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  max-height: 52px;
+  overflow-y: auto;
+  padding: 6px 10px 0;
+}
+
+/* Searchable column chooser. These files routinely carry 100+ columns, so the
+   list is filtered and scrolled rather than laid out in full. */
+.series-list {
+  flex: 0 0 auto;
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.series-list-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.series-list-bar input {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 7px;
+}
+
+.series-options {
+  max-height: 132px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0 8px;
+  padding: 3px;
+}
+
+.series-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 0;
+}
+.series-option:hover {
+  background: var(--bg-hover);
+}
+.series-option.on {
+  background: var(--accent-soft);
+}
+.series-option input {
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.series-option .swatch {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  border: 1px solid var(--border-strong);
+}
+.series-option-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.series-option input:disabled + .swatch + .series-option-name {
+  opacity: 0.45;
+}
+
+/* A definite height rather than a percentage cap: the plot needs enough room
+   for its axes and legend, and a cap that the content overflows silently clips
+   the x-axis off the bottom. The grid keeps whatever is left. */
+.plot-drawer {
+  height: 42vh;
+  min-height: 250px;
+  max-height: 440px;
+  overflow: hidden;
+}
+.series-chip {
+  padding: 2px 8px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  cursor: pointer;
+  font-size: 11.5px;
+}
+.series-chip.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------- modals */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.28);
+  width: min(760px, 92vw);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+}
+.modal header {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 650;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modal .body {
+  flex: 1;
+  overflow: auto;
+  min-height: 160px;
+}
+.modal footer {
+  padding: 9px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.browse-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+
+/* A clickable path, so any ancestor is one click away rather than several
+   presses of an "up" control. */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1px;
+  min-width: 0;
+  overflow: hidden;
+}
+.crumb {
+  border: none;
+  background: transparent;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--accent);
+}
+.crumb:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.crumb:disabled {
+  color: var(--text);
+  opacity: 1;
+  font-weight: 600;
+}
+.crumb-sep {
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.browse-split {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.browse-roots {
+  flex: 0 0 168px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-panel);
+  overflow-y: auto;
+  padding: 6px 0;
+}
+.root-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  padding: 5px 12px;
+  text-align: left;
+  min-width: 0;
+}
+.root-item:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: transparent;
+}
+.root-item.on {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.root-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browse-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+.browse-row:hover {
+  background: var(--bg-hover);
+}
+.browse-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.browse-row .size {
+  margin-left: auto;
+  padding-left: 12px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.browse-row.dim {
+  color: var(--text-faint);
+}
+
+/* --------------------------------------------------------------- banners */
+
+.banner {
+  padding: 8px 12px;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.banner.warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.banner.error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.banner .spacer {
+  flex: 1;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-faint);
+  text-align: center;
+  padding: 30px;
+}
+.empty-state h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.empty-state p {
+  margin: 0;
+  max-width: 430px;
+  line-height: 1.55;
+}
+
+.skeleton-rows {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.spin {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hint {
+  color: var(--text-faint);
+  font-size: 11.5px;
+}
+
+/* Theme overrides on top of uPlot's own stylesheet (imported in main.tsx).
+   Structural rules — canvas sizing, positioning, cursors — come from there. */
+.u-legend {
+  font-size: 11px;
+  margin: 4px 0 0;
+  text-align: left;
+  color: var(--text-dim);
+  /* Hard ceiling so a plot with many series cannot squeeze the chart out. */
+  max-height: 40px;
+  overflow-y: auto;
+}
+.u-legend tbody {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 14px;
+}
+.u-legend .u-series > * {
+  padding: 1px 0;
+}
+.u-legend .u-value {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.u-select {
+  background: rgba(37, 99, 207, 0.14);
+}
+.u-hz .u-cursor-x,
+.u-vt .u-cursor-y {
+  border-right-color: var(--border-strong);
+}
+.u-hz .u-cursor-y,
+.u-vt .u-cursor-x {
+  border-bottom-color: var(--border-strong);
+}
