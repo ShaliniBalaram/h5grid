@@ -216,6 +216,44 @@ class TestCrossPlatformRoots:
         assert not [r for r in list_roots() if r["kind"] == "root"]
 
 
+class TestVersionIsSingleSourced:
+    """`h5grid --version` must match the installed distribution.
+
+    These were two separate hardcoded strings, and 0.1.1 shipped announcing
+    itself as 0.1.0 because only pyproject.toml got bumped.
+    """
+
+    def test_matches_distribution_metadata(self):
+        from importlib.metadata import version
+
+        import h5grid
+
+        assert h5grid.__version__ == version("h5grid")
+
+    def test_version_is_derived_from_metadata_not_hardcoded(self):
+        """The only literal allowed is the not-installed fallback."""
+        import inspect
+        import re
+
+        import h5grid
+
+        source = inspect.getsource(h5grid)
+        assert "importlib.metadata" in source, "version should come from metadata"
+
+        literals = set(re.findall(r'__version__\s*=\s*["\']([^"\']+)["\']', source))
+        assert literals <= {"0.0.0.dev0"}, (
+            f"hardcoded release version(s) found: {literals - {'0.0.0.dev0'}}"
+        )
+
+    def test_cli_reports_the_same_version(self, capsys):
+        import h5grid
+        from h5grid.cli import main
+
+        with pytest.raises(SystemExit):
+            main(["--version"])
+        assert h5grid.__version__ in capsys.readouterr().out
+
+
 class TestErrorsAreVisible:
     """Failures must surface as errors, never as plausible-looking output."""
 

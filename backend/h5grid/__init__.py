@@ -15,4 +15,16 @@ os.environ.setdefault("HDF5_USE_FILE_LOCKING", "FALSE")
 # Importing here means any use of the package has the filters available.
 import hdf5plugin  # noqa: E402,F401
 
-__version__ = "0.1.0"
+# Read from the installed distribution rather than hardcoded here, so
+# pyproject.toml is the single source of truth. Previously this was a second
+# copy that had to be bumped by hand, and it silently drifted — 0.1.1 shipped
+# reporting itself as 0.1.0.
+try:
+    from importlib.metadata import PackageNotFoundError as _NotFound
+    from importlib.metadata import version as _dist_version
+
+    __version__ = _dist_version("h5grid")
+except _NotFound:  # running from a source tree that was never installed
+    __version__ = "0.0.0.dev0"
+except Exception:
+    __version__ = "0.0.0.dev0"
