@@ -7,8 +7,10 @@ while refactoring.
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
+from pathlib import Path
 
 import h5py
 import numpy as np
@@ -139,6 +141,79 @@ class TestBrokenLinks:
         with h5py.File(file_with_broken_links, "r") as f:
             children = {c["name"]: c for c in tree.build_tree(f)["children"]}
         assert children["real"]["shape"] == [10]
+
+
+class TestCrossPlatformRoots:
+    """The file picker's shortcut list must work on Windows, macOS and Linux.
+
+    The original implementation only scanned /Volumes, /media and /mnt, so a
+    Windows user got no drive shortcuts at all — no C:, no external drive, no
+    network share.
+    """
+
+    def test_every_root_is_a_real_directory_on_this_machine(self):
+        from h5grid.files import list_roots
+
+        roots = list_roots()
+        assert roots, "there should always be at least a home directory"
+        for root in roots:
+            assert Path(root["path"]).is_dir(), root
+
+    def test_no_duplicate_paths(self):
+        from h5grid.files import list_roots
+
+        paths = [r["path"] for r in list_roots()]
+        assert len(paths) == len(set(paths))
+
+    def test_nothing_is_hardcoded(self):
+        """Every entry is read from the running machine.
+
+        Guards the reported worry that a drive name from the developer's
+        machine could be baked into the package.
+        """
+        import inspect
+
+        from h5grid import files
+
+        source = inspect.getsource(files.list_roots)
+        source += inspect.getsource(files._unix_mounted_volumes)
+        source += inspect.getsource(files._windows_drives)
+        # No absolute path to anyone's personal data should appear.
+        for token in ("/Users/", "/home/", "C:\\Users", "Shalini"):
+            assert token not in source, f"hardcoded path fragment: {token}"
+
+    def test_windows_label_helper_degrades_gracefully(self):
+        """Off Windows there is no ctypes.windll; it must return "" not raise."""
+        from h5grid.files import _windows_volume_label
+
+        assert _windows_volume_label("C:\\") == "" or os.name == "nt"
+
+    def test_linux_nested_media_layout_finds_the_drive_not_the_user_folder(
+        self, tmp_path, monkeypatch
+    ):
+        """Linux mounts as /media/<user>/<label>; the label is what to offer."""
+        from h5grid import files
+
+        media = tmp_path / "media"
+        (media / "alice" / "Backup Drive").mkdir(parents=True)
+        (media / "alice" / "Field Data").mkdir(parents=True)
+
+        monkeypatch.setenv("USER", "alice")
+        monkeypatch.setattr(
+            files, "_MOUNT_ROOTS", (media,), raising=False
+        )
+        names = [name for name, _ in files._unix_mounted_volumes()]
+        # Without the descend-one-level rule this would return ["alice"].
+        assert "alice" not in names
+
+    @pytest.mark.skipif(os.name != "nt", reason="Windows-only behaviour")
+    def test_windows_lists_real_drives(self):
+        from h5grid.files import list_roots
+
+        volumes = [r for r in list_roots() if r["kind"] == "volume"]
+        assert volumes, "Windows must list at least the system drive"
+        # "/" is meaningless on Windows, so no root entry should be offered.
+        assert not [r for r in list_roots() if r["kind"] == "root"]
 
 
 class TestErrorsAreVisible:

@@ -302,12 +302,113 @@ def _make_file_id(path: Path, mtime_ns: int) -> str:
     return digest[:16]
 
 
+def _windows_volume_label(root: str) -> str:
+    """The friendly name of a Windows drive, e.g. "Backup" for D:\\.
+
+    Returns "" when the label cannot be read (unformatted, disconnected
+    network drive, or a permission problem) — the caller falls back to the
+    bare drive letter.
+    """
+    try:
+        import ctypes
+
+        buffer = ctypes.create_unicode_buffer(261)
+        ok = ctypes.windll.kernel32.GetVolumeInformationW(  # type: ignore[attr-defined]
+            ctypes.c_wchar_p(root),
+            buffer,
+            ctypes.sizeof(buffer) // ctypes.sizeof(ctypes.c_wchar),
+            None,
+            None,
+            None,
+            None,
+            0,
+        )
+        return buffer.value.strip() if ok else ""
+    except Exception:
+        return ""
+
+
+def _windows_drives() -> list[tuple[str, Path]]:
+    """(display name, path) for every mounted Windows drive."""
+    try:
+        letters = os.listdrives()  # Python 3.12+
+    except AttributeError:
+        letters = [f"{chr(c)}:\\" for c in range(ord("A"), ord("Z") + 1)]
+
+    drives: list[tuple[str, Path]] = []
+    for root in letters:
+        path = Path(root)
+        try:
+            if not path.is_dir():
+                continue
+        except OSError:
+            # Empty optical/card readers raise rather than returning False.
+            continue
+        letter = root.rstrip("\\/")
+        label = _windows_volume_label(root)
+        drives.append((f"{label} ({letter})" if label else letter, path))
+    return drives
+
+
+# Where each platform mounts removable and network media. Module-level so tests
+# can point it at a temporary tree.
+_MOUNT_ROOTS = (
+    Path("/Volumes"),      # macOS
+    Path("/media"),        # Linux (Debian/Ubuntu)
+    Path("/run/media"),    # Linux (Fedora/Arch)
+    Path("/mnt"),          # Linux manual mounts, and WSL's Windows drives
+)
+
+
+def _unix_mounted_volumes() -> list[tuple[str, Path]]:
+    """(display name, path) for removable/external media on macOS and Linux."""
+    volumes: list[tuple[str, Path]] = []
+
+    def scan(directory: Path) -> None:
+        try:
+            children = sorted(directory.iterdir(), key=lambda p: p.name.lower())
+        except OSError:
+            return
+        for child in children:
+            if child.name.startswith("."):
+                continue
+            try:
+                if not child.is_dir():
+                    continue
+                # macOS puts the boot volume in /Volumes as a symlink to "/".
+                # Listing it among the external drives is misleading, and it
+                # would otherwise take the slot the "Computer" entry wants.
+                if child.resolve() == Path("/"):
+                    continue
+            except OSError:
+                continue
+            volumes.append((child.name, child))
+
+    for mount_root in _MOUNT_ROOTS:
+        if not mount_root.is_dir():
+            continue
+        # Linux commonly nests one level deeper: /media/<user>/<label>. Descend
+        # into the directory matching the current user so the drive itself is
+        # offered, not the container folder.
+        user_dir = mount_root / os.environ.get("USER", os.environ.get("USERNAME", ""))
+        try:
+            if user_dir.name and user_dir.is_dir():
+                scan(user_dir)
+                continue
+        except OSError:
+            pass
+        scan(mount_root)
+
+    return volumes
+
+
 def list_roots() -> list[dict[str, Any]]:
     """Quick-access locations for the file picker.
 
-    Mounted volumes matter here: model data usually lives on an external or
-    network drive, and reaching /Volumes/... by walking up from the home
-    directory and scrolling the filesystem root is a poor way to get there.
+    Drives matter here: model data usually lives on an external or network
+    drive, and reaching it by walking up from the home directory is a poor way
+    to get there. Everything below is read from the running machine — nothing
+    is hardcoded, so the names shown are whatever that computer actually has.
     """
     roots: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -331,30 +432,17 @@ def list_roots() -> list[dict[str, Any]]:
     except OSError:
         pass
 
-    # Mounted drives: /Volumes on macOS, /media and /mnt on Linux.
-    for mount_root in (Path("/Volumes"), Path("/media"), Path("/mnt")):
-        if not mount_root.is_dir():
-            continue
-        try:
-            children = sorted(mount_root.iterdir(), key=lambda p: p.name.lower())
-        except OSError:
-            continue
-        for child in children:
-            if child.name.startswith("."):
-                continue
-            try:
-                if not child.is_dir():
-                    continue
-                # macOS puts the boot volume in /Volumes as a symlink to "/".
-                # Listing it among the external drives is misleading, and it
-                # would otherwise take the slot the "Computer" entry wants.
-                if child.resolve() == Path("/"):
-                    continue
-                add(child.name, child, "volume")
-            except OSError:
-                continue
+    if os.name == "nt":
+        # Windows has no single filesystem root, so the drive list *is* the
+        # root list — and "/" would resolve to whichever drive we happen to be
+        # on, which is meaningless. Drives cover it instead.
+        for name, path in _windows_drives():
+            add(name, path, "volume")
+    else:
+        for name, path in _unix_mounted_volumes():
+            add(name, path, "volume")
+        add("Computer", Path("/"), "root")
 
-    add("Computer", Path("/"), "root")
     return roots
 
 
