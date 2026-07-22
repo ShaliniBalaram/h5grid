@@ -1,7 +1,8 @@
 # H5Grid
 
+[![PyPI](https://img.shields.io/pypi/v/h5grid)](https://pypi.org/project/h5grid/)
 [![CI](https://github.com/ShaliniBalaram/h5grid/actions/workflows/ci.yml/badge.svg)](https://github.com/ShaliniBalaram/h5grid/actions/workflows/ci.yml)
-[![Python 3.11–3.13](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://github.com/ShaliniBalaram/h5grid)
+[![Python 3.11–3.13](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://pypi.org/project/h5grid/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A lightweight local HDF5 viewer for water resource model files.
