@@ -23,3 +23,10 @@ backend/h5grid/static/*
 # macOS metadata
 .DS_Store
 ._*
+
+# PyInstaller desktop builds
+/build/
+/dist/
+dist_desktop/
+build_desktop/
+*.app/

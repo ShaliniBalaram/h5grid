@@ -36,14 +36,26 @@ def build_parser() -> argparse.ArgumentParser:
     open_cmd = sub.add_parser("open", help="open a file (or just start the server)")
     open_cmd.add_argument("file", nargs="?", help="path to an .h5 file")
     _add_server_args(open_cmd)
+    open_cmd.add_argument(
+        "--desktop",
+        action="store_true",
+        help="open in a native window instead of a browser",
+    )
 
     serve_cmd = sub.add_parser("serve", help="start the server without opening a file")
     serve_cmd.set_defaults(file=None)
     _add_server_args(serve_cmd)
+
+    desktop_cmd = sub.add_parser(
+        "desktop", help="open in a native desktop window (no browser)"
+    )
+    desktop_cmd.add_argument("file", nargs="?", help="path to an .h5 file")
+    desktop_cmd.add_argument("--port", type=int, default=8765, help="preferred port")
+    desktop_cmd.add_argument("--host", default="127.0.0.1", help="bind address")
     return parser
 
 
-SUBCOMMANDS = {"open", "serve"}
+SUBCOMMANDS = {"open", "serve", "desktop"}
 
 
 def normalize_argv(argv: list[str]) -> list[str]:
@@ -82,6 +94,17 @@ def main(argv: list[str] | None = None) -> int:
 
     raw = list(sys.argv[1:] if argv is None else argv)
     args = build_parser().parse_args(normalize_argv(raw))
+
+    # Native-window mode: hand off to the pywebview launcher and never start the
+    # browser path below.
+    if args.command == "desktop" or getattr(args, "desktop", False):
+        from .desktop import run_desktop
+
+        return run_desktop(
+            Path(args.file) if args.file else None,
+            host=args.host,
+            port=args.port,
+        )
 
     from .main import create_app
     from .security import SessionAuth

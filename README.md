@@ -6,11 +6,31 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 **Open an HDF5 file and actually read it.** A tree on the left, a spreadsheet in
-the middle, metadata on the right — running locally in your browser.
+the middle, metadata on the right — running locally on your machine.
+
+Two ways to run it:
+
+**A. Download the app** — no Python, no setup. Grab the file for your system from
+the [latest release](https://github.com/ShaliniBalaram/h5grid/releases/latest)
+and double-click. It opens in its own window.
+
+| System | Download | To run |
+|---|---|---|
+| **Windows** | `H5Grid-windows-x64.exe` | Double-click it. |
+| **macOS** | `H5Grid-macos-arm64.zip` | Unzip, then right-click → **Open** the first time. |
+
+**B. Install with pip** — if you already use Python:
 
 ```bash
 pip install h5grid
-h5grid my_model_outputs.h5
+h5grid my_model_outputs.h5        # opens in your browser
+```
+
+For a native window from the pip install, add the desktop extra:
+
+```bash
+pip install "h5grid[desktop]"
+h5grid desktop my_model_outputs.h5
 ```
 
 ---
