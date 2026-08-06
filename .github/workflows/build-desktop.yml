@@ -16,6 +16,9 @@ jobs:
   build:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.os }}
+    # Needed for the release-upload step; the default token is read-only.
+    permissions:
+      contents: write
     defaults:
       run:
         shell: bash
