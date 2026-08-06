@@ -17,7 +17,14 @@ and double-click. It opens in its own window.
 | System | Download | To run |
 |---|---|---|
 | **Windows** | `H5Grid-windows-x64.exe` | Double-click it. |
-| **macOS** | `H5Grid-macos-arm64.zip` | Unzip, then right-click → **Open** the first time. |
+| **macOS** (Apple Silicon) | `H5Grid-macos-arm64.zip` | Unzip, then right-click → **Open** the first time. |
+
+**First-run warning:** the app isn't code-signed (that needs a paid developer
+certificate), so your OS will caution you the first time. On **Windows**, click
+**More info → Run anyway**; on **macOS**, right-click the app and choose **Open**
+rather than double-clicking. This is only needed once. Linux users: use `pip`
+(below) — a downloadable Linux binary needs system WebKit libraries that vary by
+distribution.
 
 **B. Install with pip** — if you already use Python:
 
@@ -309,6 +316,16 @@ cd frontend && npm run dev                      # terminal 2, proxies /api
 
 `npm run build` writes the interface into `backend/h5grid/static/`, which is why
 a `pip install` needs no Node at runtime.
+
+Building the desktop executable yourself (produces a binary for *your* OS only —
+you can't build a Windows `.exe` from a Mac, which is why CI does it on real
+Windows and macOS runners):
+
+```bash
+cd frontend && npm run build && cd ..          # the app must be built first
+pip install ".[desktop]" pyinstaller
+pyinstaller packaging/h5grid.spec --noconfirm  # → dist/H5Grid(.exe / .app)
+```
 
 ### Layout
 

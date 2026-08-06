@@ -102,6 +102,6 @@ if sys.platform == "darwin":
         bundle_identifier="com.h5grid.app",
         info_plist={
             "NSHighResolutionCapable": True,
-            "CFBundleShortVersionString": "0.1.2",
+            "CFBundleShortVersionString": "0.2.0",
         },
     )
